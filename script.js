@@ -1,16 +1,45 @@
+const display = document.getElementById("display");
+
 function appendValue(value) {
-    document.getElementById("display").value += value;
+    if (display.value === "Error" || display.value === "NaN") {
+        display.value = "";
+    }
+    display.value += value;
+    display.scrollLeft = display.scrollWidth;
 }
+
 function clearDisplay() {
-    document.getElementById("display").value = "";
+    display.value = "";
 }
+
 function calculateResult() {
     try {
-        document.getElementById("display").value = eval(document.getElementById("display").value);
+        if (display.value.trim() === "") return;
+        // Basic sanitization before eval
+        const result = eval(display.value.replace(/×/g, '*').replace(/÷/g, '/'));
+        display.value = Number.isFinite(result) ? result : "Error";
     } catch {
-        document.getElementById("display").value = "Error";
+        display.value = "Error";
     }
 }
+
 function deleteLast() {
-    document.getElementById("display").value = document.getElementById("display").value.slice(0, -1);
+    display.value = display.value.slice(0, -1);
 }
+
+// Keyboard Support
+document.addEventListener("keydown", (e) => {
+    const key = e.key;
+    if (/[0-9]/.test(key)) appendValue(key);
+    if (key === "+") appendValue("+");
+    if (key === "-") appendValue("-");
+    if (key === "*") appendValue("*");
+    if (key === "/") appendValue("/");
+    if (key === ".") appendValue(".");
+    if (key === "Enter" || key === "=") {
+        e.preventDefault();
+        calculateResult();
+    }
+    if (key === "Backspace") deleteLast();
+    if (key === "Escape") clearDisplay();
+});
